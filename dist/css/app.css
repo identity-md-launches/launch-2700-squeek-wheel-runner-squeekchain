@@ -286,6 +286,8 @@ a {
   background-image: repeating-linear-gradient(90deg, transparent 0 10px, rgb(0 0 0 / 0.12) 10px 12px);
 }
 .live-stat {
+  /* phones: each stat gets its own row so the status chip never runs into SQK */
+  grid-column: 1 / -1;
   display: flex;
   gap: var(--space-2);
   align-items: flex-start;
@@ -530,7 +532,8 @@ a {
     grid-template-columns: 2fr 1fr 1fr;
     align-items: center;
   }
-  .live-block {
+  .live-block,
+  .live-stat {
     grid-column: auto;
   }
 }

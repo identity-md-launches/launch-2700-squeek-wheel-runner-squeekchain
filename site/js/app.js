@@ -198,8 +198,9 @@
     const block = feed ? buildingBlock(feed) : null;
     lastRun = {
       score: run.score,
-      // the real wheel speed at the moment the run ended (measurement.rpmMilli / 1000)
-      rpm: feed && feed.hasStatus ? rpmText(feed.rpm) : "0.0",
+      // the real wheel speed at the moment the run ended (measurement.rpmMilli / 1000);
+      // null when no status measurement has arrived yet, never a made-up 0.0
+      rpm: feed && feed.hasStatus ? rpmText(feed.rpm) : null,
       block: block || "?",
       progress: feed && feed.progressPct !== null ? feed.progressPct.toFixed(2) : null,
       at: Date.now(),
@@ -207,7 +208,7 @@
     lastRunId = SWR.board.add({
       name: playerName(),
       score: lastRun.score,
-      rpm: Number(lastRun.rpm),
+      rpm: lastRun.rpm === null ? null : Number(lastRun.rpm),
       block: lastRun.block,
       at: lastRun.at,
     });
@@ -222,7 +223,8 @@
 
   function renderResult() {
     if (!lastRun) return;
-    const vars = { score: SWR.i18n.num(lastRun.score), rpm: lastRun.rpm, block: lastRun.block };
+    const wheel = lastRun.rpm === null ? t("noData") : lastRun.rpm + " rpm";
+    const vars = { score: SWR.i18n.num(lastRun.score), rpm: lastRun.rpm, wheel, block: lastRun.block };
     el.resultScore.textContent = t("resultScore", vars);
     el.resultMeta.textContent = t("resultMeta", vars);
     const url = SWR.shareCard.render({
@@ -233,7 +235,7 @@
       date: new Date(lastRun.at).toISOString().slice(0, 10),
       labels: {
         score: t("score"),
-        rpm: t("rpmLabel") + " " + lastRun.rpm + " rpm",
+        rpm: t("rpmLabel") + " " + wheel,
         block: t("blockLabel") + " #" + lastRun.block + (lastRun.progress ? " · " + lastRun.progress + "%" : ""),
       },
     });
@@ -242,7 +244,7 @@
     el.download.href = url;
     el.download.download = "squeek-wheel-runner-" + lastRun.score + ".png";
     el.postX.href =
-      "https://x.com/intent/tweet?text=" + encodeURIComponent(t("shareText", vars) + " @shimis_88");
+      "https://x.com/intent/tweet?text=" + encodeURIComponent(t(lastRun.rpm === null ? "shareTextNoRpm" : "shareText", vars) + " @shimis_88");
   }
 
   el.name.addEventListener("change", () => {
@@ -266,7 +268,7 @@
     list.forEach((e, i) => {
       const tr = document.createElement("tr");
       if (e.id === lastRunId) tr.className = "is-latest";
-      const cells = [String(i + 1), e.name, SWR.i18n.num(e.score), rpmText(e.rpm || 0), "#" + e.block];
+      const cells = [String(i + 1), e.name, SWR.i18n.num(e.score), typeof e.rpm === "number" ? rpmText(e.rpm) : t("noData"), "#" + e.block];
       cells.forEach((text, k) => {
         const td = document.createElement(k === 0 ? "th" : "td");
         if (k === 0) td.setAttribute("scope", "row");

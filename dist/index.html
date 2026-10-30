@@ -65,7 +65,6 @@
             <span class="live-value"><span id="minted">…</span> SQK</span>
           </div>
         </div>
-        <p class="feed-error" id="feed-error" role="status"></p>
       </section>
 
       <div class="col-game">
@@ -86,6 +85,9 @@
         <p class="help" data-i18n="jumpHelp">空格、↑ 或点按画面跳跃，按住跳得更高</p>
         <p class="note-sleep" id="sleep-note" hidden data-i18n="sleepNote">转轮停了：仓鼠睡觉模式，速度变慢</p>
       </section>
+
+      <!-- below the stage so a failed poll never moves the play surface -->
+      <p class="feed-error" id="feed-error" role="status"></p>
 
       <section class="result panel" id="result" aria-labelledby="result-title" hidden>
         <h2 id="result-title" data-i18n="resultTitle">本局成绩</h2>

@@ -6,7 +6,7 @@
   const KEY = "swr.scores";
   const MAX = 10;
 
-  /** @returns {{id: string, name: string, score: number, rpm: number, block: string, at: number}[]} */
+  /** @returns {{id: string, name: string, score: number, rpm: number | null, block: string, at: number}[]} */
   function load() {
     try {
       const list = JSON.parse(localStorage.getItem(KEY) || "[]");

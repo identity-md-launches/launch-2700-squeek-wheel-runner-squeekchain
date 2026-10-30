@@ -83,6 +83,21 @@ Screenshots were viewed by the worker (in `test/scratch/shots/`, not submitted):
 - X intent links cannot attach the card image; the user attaches the downloaded PNG.
 - `og:image` is a relative URL until the site has a fixed address.
 
+## Revision 2026-10-30 (review findings)
+
+Each finding was reproduced on the previous export (`git archive HEAD dist`) with `test/scratch/revision.mjs`. That script runs Chromium against a locally served `dist/` with the API mocked through Playwright routes and a fake clock for the 10 s polls. The old export failed 15 of 31 checks, and the fixed export passes 31/31.
+
+| Finding | Reproduced | Fix |
+| --- | --- | --- |
+| Status chip overlaps the SQK total at phone widths | Yes at 320 (chip x 79–199, SQK value x 168–289, same rows). At 390 the local fonts give a 120px chip, against the reviewer's 149px, so it only just fits here. The cause is the same. | `site/css/app.css` `.live-stat { grid-column: 1 / -1 }` below 40rem, reset to `auto` at ≥ 40rem. The SQK value now starts at y 297, below the chip (y 245–269). The Start button is still on the first screen at 390 (bottom 508 of 844). |
+| A run without live data is shared as 0.0 rpm | Yes: "Wheel 0.0 rpm", the alt text, `rpm:0` in localStorage and the X text | `site/js/app.js` `finishRun` keeps `rpm: null`. The result, card, alt text and leaderboard show `noData` ("n/a" / "暂无"). The X text uses the new `shareTextNoRpm`. |
+| Builder unavailable erases the last block | Yes: the label became "Block", the % became n/a, and there was no bonus on recovery | `site/js/squeek-data.js` `tick()` updates the measurement and block halves separately and keeps the last valid block pair. The new-block check compares against that pair, so the toast and x2 fire on recovery. A response without a numeric `rpmMilli` also keeps the previous measurement. |
+| The retry warning moves the stage | Yes: stage y 334 → 403 | `site/index.html` moves `#feed-error` out of `.live` to just after `.play` in `.col-game`. The stage y stayed at 383.6 through the unavailable, 503 and recovered polls, and the notice sits at y 667–728, below the stage. |
+
+- `npm run check` (`tsc --noEmit` + build): passed, 14 files.
+- `taste.mjs --out test/scratch/taste` (Playwright from `/opt/pwmcp`): 16/16 passed. The 390 and 1440 screenshots were viewed: the live strip stacks on the phone and stays in one row on desktop.
+- Still not run: WebKit (no WebKit build on this machine) and real devices.
+
 ## Completion
 
 Complete for the stated scope, except for the browser coverage listed above (no WebKit, real devices or screen reader).

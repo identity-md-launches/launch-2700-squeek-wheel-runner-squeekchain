@@ -71,8 +71,8 @@ Canvas palette (`PALETTE` in `site/js/pixel.js`): fur `#e89a3c`, shade `#c9772a`
 
 - Spacing tokens: `--space-1` 4, `--space-2` 8, `--space-3` 12, `--space-4` 16, `--space-6` 24px.
 - `.layout` (`main`) is a grid with a 16px gap, 16px inline padding (24px on desktop) and a 1200px max width, centred.
-- **Mobile (default):** a single column in reading order: lede → live strip → game (`.col-game`: stage, help, result) → `.col-side` (leaderboard, how-it-works). The live strip is two columns, with the block bar spanning both.
-- **≥ 40rem:** the live strip becomes one row `2fr 1fr 1fr` (block, rpm, minted).
+- **Mobile (default):** a single column in reading order: lede → live strip → game (`.col-game`: stage, help, fetch-error notice, result) → `.col-side` (leaderboard, how-it-works). On phones the live strip stacks one item per row (block bar, rpm with the wheel and status chip, minted SQK), so the status chip never runs into the SQK value. The fetch-error notice sits below the stage and controls, so a failed poll never moves the play surface.
+- **≥ 40rem:** the live strip becomes one row `2fr 1fr 1fr` (block, rpm, minted); `.live-block` and `.live-stat` return to `grid-column: auto`.
 - **≥ 62rem:** `main` becomes `minmax(0, 2fr) minmax(18rem, 1fr)`. The lede and live strip span both columns, with `.col-game` on the left and `.col-side` on the right. Each column is its own grid, so they don't share row heights.
 - The stage is the canvas at `aspect-ratio: 16 / 9`, `width: 100%`. The game draws at 240×135 game pixels and is upscaled with `image-rendering: pixelated`. At 390 wide the stage is about 358×201 and fits on the first screen with the Start button. Measured on screen: the Start button's bottom edge sits at y ≈ 458 of 844.
 - Checked: no horizontal scroll at 320, 390 and 1440.
@@ -95,7 +95,8 @@ The page is flat. Depth comes only from the 3px `--outline` border and from tona
 | --- | --- | --- |
 | Button `.btn` | `app.css` | 44px min height and width. Variants `.btn-primary` (yellow fill: one per view, the run action or "Download share card"), default (white) and `.btn-quiet` (transparent, header language toggle). Hover is gated by `@media (hover: hover)`. Press is `scale: 0.96`, 120ms ease-out, and is turned off under reduced motion. Also used on `<a>` (download, X, overlay link). |
 | Chip `.chip` | `app.css` | Status label. `data-state="running"` (yellow), `"sleeping"` (night), `"fault"` (error), `"loading"` (white). `.chip-gold` is the x2 timer. |
-| Live strip `.live` | `index.html`, `app.js renderLive()` | Block label and %, a `role="progressbar"` bar (fill is a `transform: scaleX` transition of 600ms), the rpm with an SVG wheel rotated per frame at the real rpm (static under reduced motion), and minted SQK. `.feed-error` is a stable `role="status"` region, empty and hidden until a fetch fails. |
+| Live strip `.live` | `index.html`, `app.js renderLive()` | Block label and %, a `role="progressbar"` bar (fill is a `transform: scaleX` transition of 600ms), the rpm with an SVG wheel rotated per frame at the real rpm (static under reduced motion), and minted SQK. |
+| Fetch-error notice `.feed-error` | `index.html` (in `.col-game`, after `.play`), `app.js renderLive()` | A stable `role="status"` region, empty and hidden until a fetch fails. It sits below the stage so it never shifts the game. |
 | Stage `.stage` | `index.html`, `game.js` | Canvas plus `.stage-overlay` (title and primary button) plus `.toast` (`role="status"`, gold). Pointer down on the stage jumps while running. The keyboard handler is document-level (Space/↑/W), ignored while typing in inputs or on buttons. |
 | Panel `.panel` | `app.css` | White surface with a 3px outline and 16px padding, grid gap 8px. Used for the result, leaderboard and how-it-works. |
 | Leaderboard table `.board-table` | `app.js renderBoard()` | Rank is a `th scope=row`; numbers are right-aligned and tabular; the latest run row is `.is-latest`. The empty state is a sentence saying what fills it. |

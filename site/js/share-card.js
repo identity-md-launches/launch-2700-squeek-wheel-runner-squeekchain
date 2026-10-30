@@ -5,7 +5,7 @@
   const SWR = (window.SWR = window.SWR || {});
 
   /**
-   * @param {{score: number, rpm: string, block: string, progress: string, date: string, labels: {score: string, rpm: string, block: string}}} run
+   * @param {{score: number, rpm: string | null, block: string, progress: string, date: string, labels: {score: string, rpm: string, block: string}}} run
    * @returns {string} PNG data URL
    */
   function render(run) {

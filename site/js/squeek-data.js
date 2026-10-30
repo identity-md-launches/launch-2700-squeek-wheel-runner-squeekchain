@@ -32,6 +32,9 @@
   function parseStatus(json) {
     // measurement.* comes from the wheel counter (provenance "hardware").
     const m = json && json.measurement ? json.measurement : {};
+    // Without a numeric rpmMilli there is no wheel reading in this response;
+    // the feed then keeps the previous measurement instead of inventing 0 rpm.
+    const hasMeasurement = Number.isFinite(m.rpmMilli);
     // measurement.rpmMilli: wheel revolutions per minute x 1000 (integer).
     const rpm = Number.isFinite(m.rpmMilli) ? m.rpmMilli / 1000 : 0;
     // measurement.speedMmPerSecond: rim speed of the wheel in mm/s.
@@ -65,7 +68,7 @@
         progressPct = Number((BigInt(head.blockProgress) * 10000n) / BLOCK_UNITS) / 100;
       }
     }
-    return { rpm, speedMmPerSecond, coreStatus, running, freshness, blockHeight, progressPct };
+    return { hasMeasurement, rpm, speedMmPerSecond, coreStatus, running, freshness, blockHeight, progressPct };
   }
 
   /**
@@ -133,12 +136,24 @@
       let failed = false;
 
       if (status.status === "fulfilled") {
-        const s = parseStatus(status.value);
-        if (snapshot.blockHeight !== null && s.blockHeight !== null && s.blockHeight > snapshot.blockHeight) {
-          newBlocks = Number(s.blockHeight - snapshot.blockHeight);
+        const { hasMeasurement, blockHeight, progressPct, ...measurement } = parseStatus(status.value);
+        // measurement.* and builder.* are kept separately: an unusable half
+        // (e.g. builder.status "unavailable") leaves the last good values of
+        // that half in place, so the block label, bar, bonus detector and
+        // share card keep agreeing on the last valid block.
+        if (hasMeasurement) Object.assign(snapshot, measurement, { hasStatus: true });
+        else failed = true;
+        if (blockHeight !== null) {
+          // compared against the last valid height, so blocks finished while
+          // the builder was unavailable still trigger the bonus on recovery
+          if (snapshot.blockHeight !== null && blockHeight > snapshot.blockHeight) {
+            newBlocks = Number(blockHeight - snapshot.blockHeight);
+          }
+          snapshot.blockHeight = blockHeight;
+          snapshot.progressPct = progressPct;
+        } else {
+          failed = true;
         }
-        Object.assign(snapshot, s, { hasStatus: true });
-        if (s.blockHeight === null) failed = true;
       } else {
         failed = true;
       }

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Squeek Wheel Runner overlay</title>
+    <meta name="description" content="Transparent OBS overlay: live hamster wheel rpm, Squeekchain block progress and the best Squeek Wheel Runner score." />
+    <meta property="og:title" content="Squeek Wheel Runner overlay" />
+    <meta property="og:image" content="../og-image.png" />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/overlay.css" />
+  </head>
+  <body>
+    <main class="ov" aria-label="Squeek Wheel Runner">
+      <div class="ov-item">
+        <svg class="ov-wheel" viewBox="0 0 32 32" width="44" height="44" aria-hidden="true">
+          <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="3" />
+          <g id="wheel-spokes" stroke="currentColor" stroke-width="2">
+            <line x1="16" y1="3" x2="16" y2="29" />
+            <line x1="4.7" y1="9.5" x2="27.3" y2="22.5" />
+            <line x1="4.7" y1="22.5" x2="27.3" y2="9.5" />
+          </g>
+        </svg>
+        <div>
+          <span class="ov-label" data-i18n="ovRpm">转速</span>
+          <!-- measurement.rpmMilli / 1000 -->
+          <span class="ov-value"><span id="rpm">…</span> rpm</span>
+        </div>
+      </div>
+      <div class="ov-item ov-block">
+        <div class="ov-row">
+          <span class="ov-label" id="block-label">区块</span>
+          <!-- builder.projected.blockProgress / 1e9 -->
+          <span class="ov-value" id="block-pct">…</span>
+        </div>
+        <div class="ov-bar"><div class="ov-fill" id="block-fill"></div></div>
+      </div>
+      <div class="ov-item">
+        <div>
+          <span class="ov-label" data-i18n="ovBest">最高分</span>
+          <!-- best local score: localStorage "swr.scores" (same browser profile as the game) -->
+          <span class="ov-value" id="best">0</span>
+        </div>
+      </div>
+      <p class="ov-error" id="feed-error" role="status"></p>
+    </main>
+    <script src="../js/i18n.js"></script>
+    <script src="../js/squeek-data.js"></script>
+    <script src="../js/leaderboard.js"></script>
+    <script src="../js/overlay.js"></script>
+  </body>
+</html>

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Squeek Wheel Runner｜真仓鼠驱动的像素跑酷</title>
+    <meta name="description" content="Pixel hamster runner whose speed comes from a real hamster wheel on Squeekchain. 像素仓鼠跑酷，速度来自真实仓鼠转轮的实时数据。" />
+    <meta name="theme-color" content="#ffd95e" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Squeek Wheel Runner" />
+    <meta property="og:description" content="A pixel hamster runner whose speed comes from a real hamster wheel. 像素仓鼠跑酷，速度来自真实仓鼠转轮。" />
+    <meta property="og:image" content="og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Squeek Wheel Runner" />
+    <meta name="twitter:image" content="og-image.png" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#play">Skip to game</a>
+    <header class="site-header">
+      <h1 class="brand">
+        <a href="./"><img src="favicon.svg" alt="" width="32" height="32" />Squeek Wheel Runner</a>
+      </h1>
+      <button id="lang-toggle" class="btn btn-quiet" type="button" data-i18n="switchLang" data-i18n-aria="switchLangLabel">EN</button>
+    </header>
+
+    <main id="main" class="layout">
+      <p class="lede" data-i18n="lede">像素仓鼠跑酷，速度来自一只真实仓鼠的转轮。</p>
+
+      <section class="live" aria-labelledby="live-title">
+        <h2 id="live-title" class="visually-hidden" data-i18n="liveData">实时链上数据</h2>
+        <div class="live-block">
+          <div class="live-row">
+            <span class="live-label" id="block-label">区块</span>
+            <span class="live-value" id="block-pct">…</span>
+          </div>
+          <!-- builder.projected.blockProgress / 1e9 (same as sepolia.squeekchain.com) -->
+          <div class="bar" id="block-bar" role="progressbar" aria-labelledby="block-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="bar-fill" id="block-fill"></div>
+          </div>
+        </div>
+        <div class="live-stat">
+          <svg class="wheel" id="wheel" viewBox="0 0 32 32" width="40" height="40" aria-hidden="true">
+            <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="3" />
+            <g id="wheel-spokes" stroke="currentColor" stroke-width="2">
+              <line x1="16" y1="3" x2="16" y2="29" />
+              <line x1="4.7" y1="9.5" x2="27.3" y2="22.5" />
+              <line x1="4.7" y1="22.5" x2="27.3" y2="9.5" />
+            </g>
+          </svg>
+          <div>
+            <span class="live-label" data-i18n="rpmLabel">真实转速</span>
+            <!-- measurement.rpmMilli / 1000 -->
+            <span class="live-value"><span id="rpm">…</span> <span data-i18n="rpmUnit">rpm</span></span>
+            <span class="chip" id="wheel-state" data-state="loading" data-i18n="loading">读取中…</span>
+          </div>
+        </div>
+        <div class="live-stat">
+          <div>
+            <span class="live-label" data-i18n="mintedLabel">已挖出</span>
+            <!-- economy/state supply.totalMintedBaseUnits / 1e18 -->
+            <span class="live-value"><span id="minted">…</span> SQK</span>
+          </div>
+        </div>
+        <p class="feed-error" id="feed-error" role="status"></p>
+      </section>
+
+      <div class="col-game">
+      <section class="play" id="play" tabindex="-1" aria-label="Squeek Wheel Runner">
+        <div class="hud">
+          <span><span data-i18n="score">分数</span> <strong class="num" id="score">0</strong></span>
+          <span><span data-i18n="best">最高</span> <strong class="num" id="best">0</strong></span>
+          <span class="chip chip-gold" id="bonus" hidden></span>
+        </div>
+        <div class="stage" id="stage">
+          <canvas id="game" width="240" height="135" role="img" data-i18n-aria="gameAria" aria-label="仓鼠跑酷游戏画面。按空格或点按跳跃。"></canvas>
+          <div class="stage-overlay" id="stage-overlay">
+            <p class="stage-title" id="stage-title" hidden></p>
+            <button class="btn btn-primary" id="start" type="button" data-i18n="startRun">开始奔跑</button>
+          </div>
+          <p class="toast" id="toast" role="status"></p>
+        </div>
+        <p class="help" data-i18n="jumpHelp">空格、↑ 或点按画面跳跃，按住跳得更高</p>
+        <p class="note-sleep" id="sleep-note" hidden data-i18n="sleepNote">转轮停了：仓鼠睡觉模式，速度变慢</p>
+      </section>
+
+      <section class="result panel" id="result" aria-labelledby="result-title" hidden>
+        <h2 id="result-title" data-i18n="resultTitle">本局成绩</h2>
+        <p class="result-score num" id="result-score"></p>
+        <p class="result-meta" id="result-meta"></p>
+        <div class="field">
+          <label for="player-name" data-i18n="nameLabel">排行榜名字</label>
+          <input id="player-name" name="nickname" type="text" maxlength="16" autocomplete="nickname" />
+        </div>
+        <img class="card-preview" id="card-img" alt="" width="1200" height="630" />
+        <div class="actions">
+          <a class="btn btn-primary" id="download" download="squeek-wheel-runner.png" href="#" data-i18n="downloadCard">下载分享卡片</a>
+          <a class="btn" id="post-x" href="https://x.com/intent/tweet" target="_blank" rel="noopener" data-i18n="postX">分享到 X</a>
+        </div>
+      </section>
+
+      </div>
+
+      <aside class="col-side">
+      <section class="board panel" aria-labelledby="board-title">
+        <h2 id="board-title" data-i18n="leaderboard">本机排行榜</h2>
+        <p class="muted" data-i18n="leaderboardNote">前 10 名只保存在这个浏览器里。</p>
+        <p class="muted" id="board-empty" data-i18n="leaderEmpty">还没有成绩。跑一局，分数会出现在这里。</p>
+        <table class="board-table" id="board-table" hidden>
+          <thead>
+            <tr>
+              <th scope="col" data-i18n="colRank">名次</th>
+              <th scope="col" data-i18n="colName">名字</th>
+              <th scope="col" class="r" data-i18n="colScore">分数</th>
+              <th scope="col" class="r" data-i18n="colRpm">转速</th>
+              <th scope="col" class="r" data-i18n="colBlock">区块</th>
+            </tr>
+          </thead>
+          <tbody id="board-body"></tbody>
+        </table>
+      </section>
+
+      <section class="how panel" aria-labelledby="how-title">
+        <h2 id="how-title" data-i18n="howTitle">数据怎么影响游戏</h2>
+        <ul>
+          <li data-i18n="howRpm"></li>
+          <li data-i18n="howIdle"></li>
+          <li data-i18n="howBlock"></li>
+          <li data-i18n="howSource"></li>
+        </ul>
+        <h3 data-i18n="overlayTitle">OBS 直播叠加层</h3>
+        <p data-i18n="overlayText"></p>
+        <p><code id="overlay-url">overlay/</code></p>
+        <a class="btn" href="overlay/" target="_blank" rel="noopener" data-i18n="overlayOpen">打开直播叠加层</a>
+      </section>
+      </aside>
+    </main>
+
+    <footer class="site-footer">
+      <p><span data-i18n="footerBy">作者</span> <a href="https://x.com/shimis_88" rel="noopener">@shimis_88</a></p>
+      <p><span data-i18n="footerData">数据来源</span> <a href="https://sepolia.squeekchain.com" rel="noopener">sepolia.squeekchain.com</a></p>
+    </footer>
+
+    <script src="js/i18n.js"></script>
+    <script src="js/squeek-data.js"></script>
+    <script src="js/pixel.js"></script>
+    <script src="js/leaderboard.js"></script>
+    <script src="js/share-card.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

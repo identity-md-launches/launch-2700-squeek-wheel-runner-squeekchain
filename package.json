@@ -1,0 +1,15 @@
+{
+  "name": "squeek-wheel-runner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pixel hamster runner driven by live Squeekchain hamster-wheel data. Static HTML + vanilla JS + canvas, zero runtime dependencies.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "check": "npm run typecheck && npm run build"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}
